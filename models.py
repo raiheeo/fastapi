@@ -4,6 +4,7 @@ from sqlalchemy import String, Integer, Enum, DateTime, ForeignKey, Text, DECIMA
 from typing import Optional
 from enum import Enum as PyEnum, List
 from datetime import datetime
+from passlib.hash import bcrypt
 
 
 class StatusChoices(str, PyEnum):
@@ -20,6 +21,7 @@ class UserProfile(Base):
     first_name: Mapped[str] = mapped_column(String(32))
     last_name: Mapped[str] = mapped_column(String(32))
     username: Mapped[str] = mapped_column(String(32))
+    hashed_password: Mapped[str] = mapped_column(String, nullable=False)
     email: Mapped[str] = mapped_column(String, unique=True)
     phone_number: Mapped[str | None] = mapped_column(String, nullable=True)
     profile_image: Mapped[Optional[str]] = mapped_column(String, nullable=True)
@@ -28,6 +30,14 @@ class UserProfile(Base):
     date_registered: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)  
     owner_store: Mapped[List['Store']] = relationship('Store', back_populates='owner',
                                                       cascade='all, delete-orphan')
+    
+
+    def set_password(self, password: str):
+       self.hashed_password = bcrypt.hash(password)
+
+       def check_password(self, password: str):
+            return bcrypt.verify(password, self.hashed_password)
+
 
 
 class Category(Base):
@@ -98,4 +108,7 @@ class Combo(Base):
       store: Mapped['Store'] = relationship('Store', back_populates='store_combo')
 
 
-
+class RefreshToken(Base):
+    id: Mapped[int] = mapped_column(Integer, autoincrement=True, primary_key=True)
+    token: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    created_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

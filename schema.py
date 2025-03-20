@@ -8,6 +8,7 @@ class StatusChoices(str, Enum):
     admin = "admin"
     manager = "manager" 
 
+
 class UserProfileBase(BaseModel):
     first_name: str
     last_name: str
@@ -17,6 +18,8 @@ class UserProfileBase(BaseModel):
     profile_image: Optional[str] = None
     age: Optional[int] = None
     status: StatusChoices = StatusChoices.client
+    password: str
+
 
 class UserProfileCreate(UserProfileBase):
     pass
